@@ -1,21 +1,18 @@
---// Aztup UI Library (Rewritten & Fixed v2)
---// ROOT-CAUSE FIX: window:Toggle() visibility helper overwrote window:Toggle() element.
---// Renamed visibility helper to window:ToggleVisible().
---// Also fixed: hover not firing on toggle (btn overlay absorbed mouse events),
---//             slider ZIndex, dropdown panel positioning, container sizing.
+--// Aztup UI Library (v3 - Executor Safe)
+--// Fixes: LocalPlayer nil on load, AutomaticCanvasSize compat,
+--//        Toggle name collision, hover routing, slider ZIndex.
 
 local Players      = game:GetService("Players")
 local UIS          = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
-local LocalPlayer  = Players.LocalPlayer
 
 ----------------------------------------------------------------------
 -- Library table
 ----------------------------------------------------------------------
 local library = {
-    windows      = {},
-    gui          = nil,
-    _notifQueue  = {},
+    windows     = {},
+    gui         = nil,
+    _notifQueue = {},
 }
 
 ----------------------------------------------------------------------
@@ -52,16 +49,34 @@ local function tween(obj, t, props, style, dir)
     ):Play()
 end
 
-local function ensureGui(lib)
-    if not lib.gui or not lib.gui.Parent then
-        lib.gui = create("ScreenGui", {
-            Parent         = LocalPlayer:WaitForChild("PlayerGui"),
-            Name           = "AztupUI",
-            ResetOnSpawn   = false,
-            ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
-            IgnoreGuiInset = true,
-        })
+-- FIX: LocalPlayer fetched lazily so the library doesn't crash on load
+-- in executor environments where LocalPlayer isn't ready yet.
+local function getLocalPlayer()
+    local lp = Players.LocalPlayer
+    if not lp then
+        lp = Players:GetPropertyChangedSignal("LocalPlayer"):Wait()
+        lp = Players.LocalPlayer
     end
+    return lp
+end
+
+local function ensureGui(lib)
+    if lib.gui and lib.gui.Parent then return lib.gui end
+
+    local lp  = getLocalPlayer()
+    local pGui = lp:WaitForChild("PlayerGui", 10)
+
+    -- Remove stale GUI from previous injections
+    local old = pGui:FindFirstChild("AztupUI")
+    if old then old:Destroy() end
+
+    lib.gui = create("ScreenGui", {
+        Parent         = pGui,
+        Name           = "AztupUI",
+        ResetOnSpawn   = false,
+        ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
+        IgnoreGuiInset = true,
+    })
     return lib.gui
 end
 
@@ -69,11 +84,7 @@ end
 -- NOTIFICATIONS
 ----------------------------------------------------------------------
 
-local NOTIF_W  = 260
-local NOTIF_H  = 65
-local NOTIF_P  = 8
-local NOTIF_MX = 16
-local NOTIF_MY = 16
+local NW, NH, NP, NMX, NMY = 262, 66, 8, 16, 16
 
 function library:Notify(data)
     data = data or {}
@@ -84,20 +95,20 @@ function library:Notify(data)
     ensureGui(self)
 
     local slot = #self._notifQueue + 1
-    local yPos = -(NOTIF_MY + (NOTIF_H + NOTIF_P) * slot)
+    local yPos = -(NMY + (NH + NP) * slot)
 
     local frame = create("Frame", {
         Parent           = self.gui,
-        Size             = UDim2.new(0, NOTIF_W, 0, NOTIF_H),
-        Position         = UDim2.new(1, NOTIF_W + NOTIF_MX, 1, yPos),
-        BackgroundColor3 = Color3.fromRGB(22, 22, 28),
+        Size             = UDim2.new(0, NW, 0, NH),
+        Position         = UDim2.new(1, NW + NMX, 1, yPos),
+        BackgroundColor3 = Color3.fromRGB(20, 20, 28),
         BorderSizePixel  = 0,
         ZIndex           = 50,
     })
     addCorner(frame, 8)
-    create("UIStroke", { Parent = frame, Color = Color3.fromRGB(50,50,70), Thickness = 1, ZIndex = 50 })
+    create("UIStroke", { Parent = frame, Color = Color3.fromRGB(52, 52, 72), Thickness = 1, ZIndex = 50 })
 
-    local accentBar = create("Frame", {
+    local bar = create("Frame", {
         Parent           = frame,
         Size             = UDim2.new(0, 3, 1, -14),
         Position         = UDim2.new(0, 7, 0, 7),
@@ -105,14 +116,14 @@ function library:Notify(data)
         BorderSizePixel  = 0,
         ZIndex           = 51,
     })
-    addCorner(accentBar, 2)
+    addCorner(bar, 2)
 
     create("TextLabel", {
         Parent                 = frame,
         Size                   = UDim2.new(1, -22, 0, 22),
         Position               = UDim2.new(0, 18, 0, 8),
         Text                   = title,
-        TextColor3             = Color3.fromRGB(240, 240, 240),
+        TextColor3             = Color3.fromRGB(238, 238, 238),
         BackgroundTransparency = 1,
         TextXAlignment         = Enum.TextXAlignment.Left,
         Font                   = Enum.Font.GothamBold,
@@ -124,7 +135,7 @@ function library:Notify(data)
         Size                   = UDim2.new(1, -22, 0, 28),
         Position               = UDim2.new(0, 18, 0, 30),
         Text                   = text,
-        TextColor3             = Color3.fromRGB(175, 175, 190),
+        TextColor3             = Color3.fromRGB(172, 172, 190),
         BackgroundTransparency = 1,
         TextXAlignment         = Enum.TextXAlignment.Left,
         TextWrapped            = true,
@@ -134,18 +145,18 @@ function library:Notify(data)
     })
 
     table.insert(self._notifQueue, frame)
-    tween(frame, 0.3, { Position = UDim2.new(1, -(NOTIF_W + NOTIF_MX), 1, yPos) })
+    tween(frame, 0.3, { Position = UDim2.new(1, -(NW + NMX), 1, yPos) })
 
     task.delay(duration, function()
-        tween(frame, 0.3, { Position = UDim2.new(1, NOTIF_W + NOTIF_MX, 1, yPos) })
+        tween(frame, 0.3, { Position = UDim2.new(1, NW + NMX, 1, yPos) })
         task.wait(0.35)
         frame:Destroy()
         for i, f in ipairs(self._notifQueue) do
-            if f == frame then table.remove(self._notifQueue, i) break end
+            if f == frame then table.remove(self._notifQueue, i); break end
         end
         for i, f in ipairs(self._notifQueue) do
-            local ny = -(NOTIF_MY + (NOTIF_H + NOTIF_P) * i)
-            tween(f, 0.22, { Position = UDim2.new(1, -(NOTIF_W + NOTIF_MX), 1, ny) })
+            local ny = -(NMY + (NH + NP) * i)
+            tween(f, 0.22, { Position = UDim2.new(1, -(NW + NMX), 1, ny) })
         end
     end)
 end
@@ -157,18 +168,17 @@ end
 function library:CreateWindow(config)
     config = config or {}
 
-    local ACCENT    = config.accent   or Color3.fromRGB(100, 160, 255)
-    local BAR_COLOR = config.barColor or Color3.fromRGB(18, 18, 24)
-    local BG_COLOR  = config.bgColor  or Color3.fromRGB(26, 26, 34)
-    local TXT_COLOR = config.textColor or Color3.fromRGB(240, 240, 240)
-    local title     = config.title    or config.text or "Window"
-    local keybind   = config.keybind  or nil
+    local ACCENT    = config.accent    or Color3.fromRGB(100, 160, 255)
+    local BAR_COLOR = config.barColor  or Color3.fromRGB(18, 18, 24)
+    local BG_COLOR  = config.bgColor   or Color3.fromRGB(26, 26, 34)
+    local TXT_COLOR = config.textColor or Color3.fromRGB(238, 238, 238)
+    local title     = config.title     or config.text or "Window"
+    local keybind   = config.keybind
+    local MAX_H     = config.maxHeight or 340
 
-    -- Element colours (shared across all element builders)
-    local ELEM_BG     = Color3.fromRGB(36, 36, 48)
-    local ELEM_HOV    = Color3.fromRGB(46, 46, 62)
-    local ELEM_H      = 28
-    local MAX_H       = config.maxHeight or 340
+    local ELEM_BG  = Color3.fromRGB(36, 36, 50)
+    local ELEM_HOV = Color3.fromRGB(46, 46, 64)
+    local ELEM_H   = 28
 
     ensureGui(self)
 
@@ -185,17 +195,15 @@ function library:CreateWindow(config)
         ClipsDescendants = false,
     })
     addCorner(main, 8)
-    create("UIStroke", { Parent = main, Color = Color3.fromRGB(55, 55, 72), Thickness = 1 })
+    create("UIStroke", { Parent = main, Color = Color3.fromRGB(55, 55, 74), Thickness = 1 })
 
-    -- Accent strip at top
-    local strip = create("Frame", {
+    create("Frame", {  -- accent strip
         Parent           = main,
         Size             = UDim2.new(1, 0, 0, 2),
         BackgroundColor3 = ACCENT,
         BorderSizePixel  = 0,
         ZIndex           = 2,
     })
-    addCorner(strip, 2)
 
     create("TextLabel", {
         Parent                 = main,
@@ -214,9 +222,9 @@ function library:CreateWindow(config)
         Parent           = main,
         Size             = UDim2.new(0, 22, 0, 22),
         Position         = UDim2.new(1, -26, 0.5, -11),
-        Text             = "−",
-        TextColor3       = Color3.fromRGB(180, 180, 195),
-        BackgroundColor3 = Color3.fromRGB(38, 38, 52),
+        Text             = "-",
+        TextColor3       = Color3.fromRGB(175, 175, 195),
+        BackgroundColor3 = Color3.fromRGB(36, 36, 52),
         BorderSizePixel  = 0,
         Font             = Enum.Font.GothamBold,
         TextSize         = 14,
@@ -226,6 +234,8 @@ function library:CreateWindow(config)
 
     ------------------------------------------------------------------
     -- Content container
+    -- FIX: AutomaticCanvasSize removed — not supported in all
+    -- environments. Canvas size is managed manually via updateCanvas().
     ------------------------------------------------------------------
     local container = create("ScrollingFrame", {
         Parent               = main,
@@ -237,11 +247,10 @@ function library:CreateWindow(config)
         ScrollBarThickness   = 3,
         ScrollBarImageColor3 = ACCENT,
         CanvasSize           = UDim2.new(0, 0, 0, 0),
-        AutomaticCanvasSize  = Enum.AutomaticSize.Y,
         ZIndex               = 2,
     })
     addCorner(container, 8)
-    create("UIStroke", { Parent = container, Color = Color3.fromRGB(55, 55, 72), Thickness = 1 })
+    create("UIStroke", { Parent = container, Color = Color3.fromRGB(55, 55, 74), Thickness = 1 })
 
     local layout = create("UIListLayout", {
         Parent    = container,
@@ -250,13 +259,18 @@ function library:CreateWindow(config)
     })
     addPadding(container, 6, 6)
 
-    -- Keep container height capped
-    local function refreshHeight()
-        local h = math.min(layout.AbsoluteContentSize.Y + 14, MAX_H)
-        container.Size = UDim2.new(1, 0, 0, h)
+    local collapsed = false
+
+    local function updateCanvas()
+        if collapsed then return end
+        local contentH = layout.AbsoluteContentSize.Y + 14
+        local h        = math.min(contentH, MAX_H)
+        container.Size       = UDim2.new(1, 0, 0, h)
+        container.CanvasSize = UDim2.new(0, 0, 0, layout.AbsoluteContentSize.Y + 14)
     end
-    layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(refreshHeight)
-    task.defer(refreshHeight)
+
+    layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(updateCanvas)
+    task.defer(updateCanvas)
 
     ------------------------------------------------------------------
     -- Dragging
@@ -293,19 +307,17 @@ function library:CreateWindow(config)
     end)
 
     ------------------------------------------------------------------
-    -- Collapse
+    -- Collapse / expand
     ------------------------------------------------------------------
-    local collapsed = false
-
     collapseBtn.MouseButton1Click:Connect(function()
         collapsed = not collapsed
         if collapsed then
-            tween(container, 0.22, { Size = UDim2.new(1, 0, 0, 0) })
+            tween(container, 0.2, { Size = UDim2.new(1, 0, 0, 0) })
             collapseBtn.Text = "+"
         else
+            collapseBtn.Text = "-"
             local h = math.min(layout.AbsoluteContentSize.Y + 14, MAX_H)
-            tween(container, 0.22, { Size = UDim2.new(1, 0, 0, h) })
-            collapseBtn.Text = "−"
+            tween(container, 0.2, { Size = UDim2.new(1, 0, 0, h) })
         end
     end)
 
@@ -321,7 +333,6 @@ function library:CreateWindow(config)
     -- Shared helpers
     ------------------------------------------------------------------
 
-    -- Base element frame parented to container
     local function baseElem(h)
         local f = create("Frame", {
             Parent           = container,
@@ -333,26 +344,27 @@ function library:CreateWindow(config)
         return f
     end
 
-    -- Hover: connect to the BUTTON (btn) but change FRAME (f) colour.
-    -- This is needed because a full-size btn overlay absorbs mouse events.
-    local function applyHover(btn, f)
-        btn.MouseEnter:Connect(function() tween(f, 0.1, { BackgroundColor3 = ELEM_HOV }) end)
-        btn.MouseLeave:Connect(function() tween(f, 0.1, { BackgroundColor3 = ELEM_BG  }) end)
+    -- FIX: hover connected to the overlay BUTTON, not the frame.
+    -- The overlay absorbs all mouse events so MouseEnter on the frame
+    -- never fires — must wire hover through the button instead.
+    local function applyHover(btn, frame)
+        btn.MouseEnter:Connect(function() tween(frame, 0.1, { BackgroundColor3 = ELEM_HOV }) end)
+        btn.MouseLeave:Connect(function() tween(frame, 0.1, { BackgroundColor3 = ELEM_BG  }) end)
     end
 
-    -- Full-size transparent click overlay that sits on top of all children in f
-    local function makeOverlay(f)
+    -- Transparent full-size click overlay (ZIndex 5 = above labels/tracks)
+    local function overlay(parent)
         return create("TextButton", {
-            Parent                 = f,
+            Parent                 = parent,
             Size                   = UDim2.new(1, 0, 1, 0),
             Text                   = "",
             BackgroundTransparency = 1,
-            ZIndex                 = 5,   -- above label, track, etc.
+            ZIndex                 = 5,
         })
     end
 
     ------------------------------------------------------------------
-    -- Window element table
+    -- Window object
     ------------------------------------------------------------------
     local window = { _main = main, _container = container }
 
@@ -361,17 +373,18 @@ function library:CreateWindow(config)
     ----------------------------------------------------------------
     function window:Label(text)
         local f = baseElem(22)
-        f.BackgroundTransparency = 1   -- labels have no background
+        f.BackgroundTransparency = 1
         create("TextLabel", {
             Parent                 = f,
             Size                   = UDim2.new(1, -10, 1, 0),
             Position               = UDim2.new(0, 8, 0, 0),
             Text                   = text,
-            TextColor3             = Color3.fromRGB(155, 155, 175),
+            TextColor3             = Color3.fromRGB(148, 148, 170),
             BackgroundTransparency = 1,
             TextXAlignment         = Enum.TextXAlignment.Left,
             Font                   = Enum.Font.Gotham,
             TextSize               = 11,
+            ZIndex                 = 3,
         })
     end
 
@@ -389,22 +402,23 @@ function library:CreateWindow(config)
             Parent           = f,
             Size             = UDim2.new(1, -10, 0, 1),
             Position         = UDim2.new(0, 5, 0.5, 0),
-            BackgroundColor3 = Color3.fromRGB(55, 55, 72),
+            BackgroundColor3 = Color3.fromRGB(55, 55, 74),
             BorderSizePixel  = 0,
         })
         if text and text ~= "" then
             create("TextLabel", {
-                Parent                 = f,
-                AutomaticSize          = Enum.AutomaticSize.X,
-                Size                   = UDim2.new(0, 0, 1, 0),
-                Position               = UDim2.new(0.5, 0, 0, 0),
-                AnchorPoint            = Vector2.new(0.5, 0),
-                Text                   = "  " .. text .. "  ",
-                TextColor3             = Color3.fromRGB(125, 125, 155),
-                BackgroundColor3       = BG_COLOR,
-                BorderSizePixel        = 0,
-                Font                   = Enum.Font.GothamBold,
-                TextSize               = 10,
+                Parent           = f,
+                AutomaticSize    = Enum.AutomaticSize.X,
+                Size             = UDim2.new(0, 0, 1, 0),
+                Position         = UDim2.new(0.5, 0, 0, 0),
+                AnchorPoint      = Vector2.new(0.5, 0),
+                Text             = "  " .. text .. "  ",
+                TextColor3       = Color3.fromRGB(120, 120, 150),
+                BackgroundColor3 = BG_COLOR,
+                BorderSizePixel  = 0,
+                Font             = Enum.Font.GothamBold,
+                TextSize         = 10,
+                ZIndex           = 2,
             })
         end
     end
@@ -418,45 +432,41 @@ function library:CreateWindow(config)
             Parent                 = f,
             Size                   = UDim2.new(1, 0, 1, 0),
             Text                   = text,
-            TextColor3             = Color3.fromRGB(215, 215, 230),
+            TextColor3             = Color3.fromRGB(212, 212, 228),
             BackgroundTransparency = 1,
             Font                   = Enum.Font.Gotham,
             TextSize               = 12,
             ZIndex                 = 3,
         })
         applyHover(btn, f)
-
         btn.MouseButton1Click:Connect(function()
             tween(f, 0.07, { BackgroundColor3 = ACCENT })
-            tween(f, 0.18, { BackgroundColor3 = ELEM_BG })
+            tween(f, 0.2,  { BackgroundColor3 = ELEM_BG })
             pcall(callback)
         end)
     end
 
     ----------------------------------------------------------------
     -- TOGGLE
-    -- FIX: was named window:Toggle() which collided with the visibility
-    --      helper of the same name defined below, erasing this function.
-    --      Visibility helper is now window:ToggleVisible().
-    --      Also fixed: hover now connected to the overlay btn, not f.
+    -- FIX v2: renamed visibility helper to ToggleVisible() so this
+    -- function is never overwritten (was the root cause of toggles
+    -- being invisible — the second definition erased this one).
+    -- FIX v3: hover wired through overlay button, not frame.
     ----------------------------------------------------------------
     function window:Toggle(text, default, callback)
-        -- Support old 2-arg style:  Toggle(text, callback)
         if type(default) == "function" then
-            callback = default
-            default  = false
+            callback = default; default = false
         end
         local state = (default == true)
 
         local f = baseElem(ELEM_H)
 
-        -- Label
         create("TextLabel", {
             Parent                 = f,
             Size                   = UDim2.new(1, -54, 1, 0),
             Position               = UDim2.new(0, 8, 0, 0),
             Text                   = text,
-            TextColor3             = Color3.fromRGB(215, 215, 230),
+            TextColor3             = Color3.fromRGB(212, 212, 228),
             BackgroundTransparency = 1,
             TextXAlignment         = Enum.TextXAlignment.Left,
             Font                   = Enum.Font.Gotham,
@@ -469,7 +479,7 @@ function library:CreateWindow(config)
             Parent           = f,
             Size             = UDim2.new(0, 36, 0, 18),
             Position         = UDim2.new(1, -44, 0.5, -9),
-            BackgroundColor3 = state and ACCENT or Color3.fromRGB(52, 52, 68),
+            BackgroundColor3 = state and ACCENT or Color3.fromRGB(50, 50, 68),
             BorderSizePixel  = 0,
             ZIndex           = 3,
         })
@@ -479,36 +489,36 @@ function library:CreateWindow(config)
         local thumb = create("Frame", {
             Parent           = track,
             Size             = UDim2.new(0, 13, 0, 13),
-            Position         = state and UDim2.new(1, -16, 0.5, -6.5) or UDim2.new(0, 3, 0.5, -6.5),
+            Position         = state
+                and UDim2.new(1, -16, 0.5, -6)
+                or  UDim2.new(0,   3, 0.5, -6),
             BackgroundColor3 = Color3.fromRGB(255, 255, 255),
             BorderSizePixel  = 0,
             ZIndex           = 4,
         })
         addCorner(thumb, 7)
 
-        -- Transparent overlay for clicks (ZIndex 5 = on top)
-        local overlay = makeOverlay(f)
-        applyHover(overlay, f)
+        local ov = overlay(f)
+        applyHover(ov, f)
 
-        local function setVisual()
-            tween(track, 0.16, { BackgroundColor3 = state and ACCENT or Color3.fromRGB(52, 52, 68) })
-            tween(thumb, 0.16, {
+        local function refresh()
+            tween(track, 0.15, { BackgroundColor3 = state and ACCENT or Color3.fromRGB(50, 50, 68) })
+            tween(thumb, 0.15, {
                 Position = state
-                    and UDim2.new(1, -16, 0.5, -6.5)
-                    or  UDim2.new(0,  3, 0.5, -6.5)
+                    and UDim2.new(1, -16, 0.5, -6)
+                    or  UDim2.new(0,   3, 0.5, -6),
             })
         end
-        setVisual()
 
-        overlay.MouseButton1Click:Connect(function()
+        ov.MouseButton1Click:Connect(function()
             state = not state
-            setVisual()
+            refresh()
             pcall(callback, state)
         end)
 
         return {
-            SetState = function(_, s) state = s; setVisual() end,
-            GetState = function() return state end,
+            SetState = function(_, s) state = s; refresh() end,
+            GetState = function()     return state          end,
         }
     end
 
@@ -517,8 +527,7 @@ function library:CreateWindow(config)
     ----------------------------------------------------------------
     function window:Slider(text, min, max, default, callback)
         if type(default) == "function" then
-            callback = default
-            default  = min
+            callback = default; default = min
         end
         local value = math.clamp(default or min, min, max)
 
@@ -529,7 +538,7 @@ function library:CreateWindow(config)
             Size                   = UDim2.new(1, -54, 0, 18),
             Position               = UDim2.new(0, 8, 0, 4),
             Text                   = text,
-            TextColor3             = Color3.fromRGB(215, 215, 230),
+            TextColor3             = Color3.fromRGB(212, 212, 228),
             BackgroundTransparency = 1,
             TextXAlignment         = Enum.TextXAlignment.Left,
             Font                   = Enum.Font.Gotham,
@@ -550,12 +559,11 @@ function library:CreateWindow(config)
             ZIndex                 = 3,
         })
 
-        -- Track
         local track = create("Frame", {
             Parent           = f,
             Size             = UDim2.new(1, -16, 0, 5),
             Position         = UDim2.new(0, 8, 1, -13),
-            BackgroundColor3 = Color3.fromRGB(48, 48, 64),
+            BackgroundColor3 = Color3.fromRGB(46, 46, 64),
             BorderSizePixel  = 0,
             ZIndex           = 3,
         })
@@ -570,7 +578,6 @@ function library:CreateWindow(config)
         })
         addCorner(fill, 3)
 
-        -- Drag zone over the track
         local dragZone = create("TextButton", {
             Parent                 = track,
             Size                   = UDim2.new(1, 0, 0, 24),
@@ -582,33 +589,29 @@ function library:CreateWindow(config)
 
         local sliding = false
 
-        local function applyPos(inputPos)
-            local rel = math.clamp(inputPos.X - track.AbsolutePosition.X, 0, track.AbsoluteSize.X)
+        local function applyPos(ix)
+            local rel = math.clamp(ix - track.AbsolutePosition.X, 0, track.AbsoluteSize.X)
             local pct = rel / track.AbsoluteSize.X
-            value        = math.floor(min + (max - min) * pct + 0.5)
-            fill.Size    = UDim2.new(pct, 0, 1, 0)
-            valLbl.Text  = tostring(value)
+            value       = math.floor(min + (max - min) * pct + 0.5)
+            fill.Size   = UDim2.new(pct, 0, 1, 0)
+            valLbl.Text = tostring(value)
             pcall(callback, value)
         end
 
         dragZone.MouseButton1Down:Connect(function() sliding = true end)
-
         UIS.InputChanged:Connect(function(i)
             if sliding and i.UserInputType == Enum.UserInputType.MouseMovement then
-                applyPos(i.Position)
+                applyPos(i.Position.X)
             end
         end)
         UIS.InputEnded:Connect(function(i)
-            if i.UserInputType == Enum.UserInputType.MouseButton1 then
-                sliding = false
-            end
+            if i.UserInputType == Enum.UserInputType.MouseButton1 then sliding = false end
         end)
 
         return {
             SetValue = function(_, v)
                 value = math.clamp(v, min, max)
-                local pct   = (value - min) / (max - min)
-                fill.Size   = UDim2.new(pct, 0, 1, 0)
+                fill.Size   = UDim2.new((value - min) / (max - min), 0, 1, 0)
                 valLbl.Text = tostring(value)
             end,
             GetValue = function() return value end,
@@ -621,6 +624,7 @@ function library:CreateWindow(config)
     function window:Dropdown(text, options, callback)
         options = options or {}
         local selected = nil
+        local isOpen   = false
 
         local f = baseElem(ELEM_H)
 
@@ -629,7 +633,7 @@ function library:CreateWindow(config)
             Size                   = UDim2.new(0.55, 0, 1, 0),
             Position               = UDim2.new(0, 8, 0, 0),
             Text                   = text,
-            TextColor3             = Color3.fromRGB(215, 215, 230),
+            TextColor3             = Color3.fromRGB(212, 212, 228),
             BackgroundTransparency = 1,
             TextXAlignment         = Enum.TextXAlignment.Left,
             Font                   = Enum.Font.Gotham,
@@ -642,7 +646,7 @@ function library:CreateWindow(config)
             Size                   = UDim2.new(0.38, 0, 1, 0),
             Position               = UDim2.new(0.58, 0, 0, 0),
             Text                   = "Select...",
-            TextColor3             = Color3.fromRGB(120, 120, 145),
+            TextColor3             = Color3.fromRGB(115, 115, 142),
             BackgroundTransparency = 1,
             TextXAlignment         = Enum.TextXAlignment.Right,
             Font                   = Enum.Font.Gotham,
@@ -654,26 +658,26 @@ function library:CreateWindow(config)
             Parent                 = f,
             Size                   = UDim2.new(0, 16, 1, 0),
             Position               = UDim2.new(1, -18, 0, 0),
-            Text                   = "▾",
-            TextColor3             = Color3.fromRGB(120, 120, 145),
+            Text                   = "v",
+            TextColor3             = Color3.fromRGB(115, 115, 142),
             BackgroundTransparency = 1,
-            Font                   = Enum.Font.Gotham,
-            TextSize               = 12,
+            Font                   = Enum.Font.GothamBold,
+            TextSize               = 11,
             ZIndex                 = 3,
         })
 
-        -- Dropdown panel parented to main (so it can float above the container)
+        -- Panel parented to main so it floats above the container
         local panel = create("Frame", {
             Parent           = main,
             Size             = UDim2.new(0, 218, 0, 0),
-            BackgroundColor3 = Color3.fromRGB(28, 28, 40),
+            BackgroundColor3 = Color3.fromRGB(26, 26, 40),
             BorderSizePixel  = 0,
             Visible          = false,
             ZIndex           = 20,
             ClipsDescendants = true,
         })
         addCorner(panel, 6)
-        create("UIStroke", { Parent = panel, Color = Color3.fromRGB(55, 55, 72), Thickness = 1, ZIndex = 20 })
+        create("UIStroke", { Parent = panel, Color = Color3.fromRGB(55, 55, 74), Thickness = 1, ZIndex = 20 })
 
         local pLayout = create("UIListLayout", {
             Parent    = panel,
@@ -682,53 +686,51 @@ function library:CreateWindow(config)
         })
         addPadding(panel, 4, 4)
 
-        local function closePanel(open)
-            tween(panel, 0.15, { Size = UDim2.new(0, 218, 0, 0) })
-            task.delay(0.16, function() panel.Visible = false end)
-            tween(arrow, 0.14, { Rotation = 0 })
-            return false
+        local function closePanel()
+            isOpen = false
+            tween(panel, 0.14, { Size = UDim2.new(0, 218, 0, 0) })
+            task.delay(0.15, function() panel.Visible = false end)
+            arrow.Text = "v"
         end
-
-        local open = false
 
         for _, opt in ipairs(options) do
             local row = create("TextButton", {
                 Parent           = panel,
                 Size             = UDim2.new(1, 0, 0, 24),
                 Text             = opt,
-                TextColor3       = Color3.fromRGB(205, 205, 225),
-                BackgroundColor3 = Color3.fromRGB(34, 34, 48),
+                TextColor3       = Color3.fromRGB(202, 202, 222),
+                BackgroundColor3 = Color3.fromRGB(32, 32, 48),
                 BorderSizePixel  = 0,
                 Font             = Enum.Font.Gotham,
                 TextSize         = 11,
                 ZIndex           = 21,
             })
             addCorner(row, 4)
-            row.MouseEnter:Connect(function() tween(row, 0.1, { BackgroundColor3 = Color3.fromRGB(48, 48, 66) }) end)
-            row.MouseLeave:Connect(function() tween(row, 0.1, { BackgroundColor3 = Color3.fromRGB(34, 34, 48) }) end)
+            row.MouseEnter:Connect(function() tween(row, 0.1, { BackgroundColor3 = Color3.fromRGB(46, 46, 66) }) end)
+            row.MouseLeave:Connect(function() tween(row, 0.1, { BackgroundColor3 = Color3.fromRGB(32, 32, 48) }) end)
             row.MouseButton1Click:Connect(function()
-                selected = opt
-                selLbl.Text      = opt
-                selLbl.TextColor3 = Color3.fromRGB(200, 200, 220)
-                open = closePanel()
+                selected          = opt
+                selLbl.Text       = opt
+                selLbl.TextColor3 = Color3.fromRGB(198, 198, 218)
+                closePanel()
                 pcall(callback, opt)
             end)
         end
 
-        local overlay = makeOverlay(f)
-        applyHover(overlay, f)
+        local ov = overlay(f)
+        applyHover(ov, f)
 
-        overlay.MouseButton1Click:Connect(function()
-            open = not open
-            if open then
+        ov.MouseButton1Click:Connect(function()
+            if isOpen then
+                closePanel()
+            else
+                isOpen = true
                 local relY = f.AbsolutePosition.Y - main.AbsolutePosition.Y
                 panel.Position = UDim2.new(0, 6, 0, relY + ELEM_H + 2)
                 panel.Visible  = true
                 local th = math.min(pLayout.AbsoluteContentSize.Y + 10, 160)
-                tween(panel, 0.16, { Size = UDim2.new(0, 218, 0, th) })
-                tween(arrow, 0.14, { Rotation = 180 })
-            else
-                open = closePanel()
+                tween(panel, 0.15, { Size = UDim2.new(0, 218, 0, th) })
+                arrow.Text = "^"
             end
         end)
 
@@ -750,8 +752,8 @@ function library:CreateWindow(config)
             Position               = UDim2.new(0, 5, 0, 3),
             PlaceholderText        = placeholder or "Type here...",
             Text                   = "",
-            TextColor3             = Color3.fromRGB(215, 215, 230),
-            PlaceholderColor3      = Color3.fromRGB(105, 105, 130),
+            TextColor3             = Color3.fromRGB(212, 212, 228),
+            PlaceholderColor3      = Color3.fromRGB(100, 100, 126),
             BackgroundTransparency = 1,
             Font                   = Enum.Font.Gotham,
             TextSize               = 12,
@@ -763,14 +765,13 @@ function library:CreateWindow(config)
         box.FocusLost:Connect(function(enter)
             if enter then pcall(callback, box.Text) end
         end)
-
         box.Focused:Connect(function()   tween(f, 0.1, { BackgroundColor3 = ELEM_HOV }) end)
         box.FocusLost:Connect(function() tween(f, 0.1, { BackgroundColor3 = ELEM_BG  }) end)
 
         return {
-            GetText = function()    return box.Text end,
-            SetText = function(_, t) box.Text = t  end,
-            Clear   = function()    box.Text = ""  end,
+            GetText = function()     return box.Text end,
+            SetText = function(_, t) box.Text = t   end,
+            Clear   = function()     box.Text = ""  end,
         }
     end
 
@@ -788,7 +789,7 @@ function library:CreateWindow(config)
             Size                   = UDim2.new(1, -52, 1, 0),
             Position               = UDim2.new(0, 8, 0, 0),
             Text                   = text,
-            TextColor3             = Color3.fromRGB(215, 215, 230),
+            TextColor3             = Color3.fromRGB(212, 212, 228),
             BackgroundTransparency = 1,
             TextXAlignment         = Enum.TextXAlignment.Left,
             Font                   = Enum.Font.Gotham,
@@ -805,13 +806,13 @@ function library:CreateWindow(config)
             ZIndex           = 3,
         })
         addCorner(swatch, 4)
-        create("UIStroke", { Parent = swatch, Color = Color3.fromRGB(80,80,100), Thickness = 1, ZIndex = 4 })
+        create("UIStroke", { Parent = swatch, Color = Color3.fromRGB(80, 80, 104), Thickness = 1, ZIndex = 4 })
 
-        -- Preset panel (inline in container)
+        -- Preset palette panel (inline in container)
         local panel = create("Frame", {
             Parent           = container,
             Size             = UDim2.new(1, 0, 0, 0),
-            BackgroundColor3 = Color3.fromRGB(30, 30, 44),
+            BackgroundColor3 = Color3.fromRGB(30, 30, 46),
             BorderSizePixel  = 0,
             ClipsDescendants = true,
             Visible          = false,
@@ -819,10 +820,10 @@ function library:CreateWindow(config)
         addCorner(panel, 5)
 
         local presets = {
-            Color3.fromRGB(255,75,75),   Color3.fromRGB(255,155,50),
-            Color3.fromRGB(250,215,50),  Color3.fromRGB(75,215,120),
-            Color3.fromRGB(75,175,255),  Color3.fromRGB(155,95,255),
-            Color3.fromRGB(255,95,175),  Color3.fromRGB(255,255,255),
+            Color3.fromRGB(255,70,70),  Color3.fromRGB(255,150,45),
+            Color3.fromRGB(248,212,45), Color3.fromRGB(70,210,115),
+            Color3.fromRGB(70,170,255), Color3.fromRGB(150,90,255),
+            Color3.fromRGB(255,90,170), Color3.fromRGB(255,255,255),
         }
 
         local row = create("Frame", {
@@ -848,43 +849,42 @@ function library:CreateWindow(config)
             })
             addCorner(dot, 5)
             dot.MouseButton1Click:Connect(function()
-                currentColor = c
+                currentColor            = c
                 swatch.BackgroundColor3 = c
                 pcall(callback, c)
             end)
         end
 
-        local open = false
-        local overlay = makeOverlay(f)
-        applyHover(overlay, f)
+        local isOpen = false
+        local ov = overlay(f)
+        applyHover(ov, f)
 
-        overlay.MouseButton1Click:Connect(function()
-            open = not open
-            if open then
+        ov.MouseButton1Click:Connect(function()
+            isOpen = not isOpen
+            if isOpen then
                 panel.Visible = true
-                tween(panel, 0.16, { Size = UDim2.new(1, 0, 0, 40) })
+                tween(panel, 0.15, { Size = UDim2.new(1, 0, 0, 40) })
             else
-                tween(panel, 0.14, { Size = UDim2.new(1, 0, 0, 0) })
-                task.delay(0.15, function() panel.Visible = false end)
+                tween(panel, 0.13, { Size = UDim2.new(1, 0, 0, 0) })
+                task.delay(0.14, function() panel.Visible = false end)
             end
         end)
 
         return {
             SetColor = function(_, c) currentColor = c; swatch.BackgroundColor3 = c end,
-            GetColor = function() return currentColor end,
+            GetColor = function()     return currentColor end,
         }
     end
 
     ----------------------------------------------------------------
-    -- Visibility helpers
-    -- NOTE: ToggleVisible (not Toggle) to avoid colliding with the
-    --       Toggle element builder above.
+    -- Visibility
+    -- NOTE: ToggleVisible (NOT Toggle) — keeping Toggle free for the
+    -- element builder above so it is never overwritten.
     ----------------------------------------------------------------
-    function window:Show()          main.Visible = true            end
-    function window:Hide()          main.Visible = false           end
+    function window:Show()          main.Visible = true             end
+    function window:Hide()          main.Visible = false            end
     function window:ToggleVisible() main.Visible = not main.Visible end
-
-    function window:Destroy() main:Destroy() end
+    function window:Destroy()       main:Destroy()                  end
 
     table.insert(library.windows, window)
     return window
@@ -894,10 +894,7 @@ end
 -- Destroy everything
 ----------------------------------------------------------------------
 function library:Destroy()
-    if self.gui then
-        self.gui:Destroy()
-        self.gui = nil
-    end
+    if self.gui then self.gui:Destroy(); self.gui = nil end
     self.windows     = {}
     self._notifQueue = {}
 end
