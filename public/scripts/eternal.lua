@@ -25,12 +25,13 @@ e::::::::e                t::::::tttt:::::te::::::::e           r:::::r         
                                                                                                                                
                                                                                                                                
 --]]
+
+
 -- UI Library
 local ui = loadstring(game:HttpGet("https://cdn.bxsh.info/UIlibrary's/eternal.lua"))()
 
-print("
+print([[
 
-                                                                                                                               
                                                                                                                                
                              tttt                                                                                      lllllll 
                           ttt:::t                                                                                      l:::::l 
@@ -48,15 +49,10 @@ e::::::::e                t::::::tttt:::::te::::::::e           r:::::r         
  e::::::::eeeeeeee        tt::::::::::::::t e::::::::eeeeeeee   r:::::r              n::::n    n::::na:::::aaaa::::::a l::::::l
   ee:::::::::::::e          tt:::::::::::tt  ee:::::::::::::e   r:::::r              n::::n    n::::n a::::::::::aa:::al::::::l
     eeeeeeeeeeeeee            ttttttttttt      eeeeeeeeeeeeee   rrrrrrr              nnnnnn    nnnnnn  aaaaaaaaaa  aaaallllllll
-                                                                                                                               
-                                                                                                                               
-                                                        made by 223.bxsh                                                                           
-                                                                                                                               
-                                                                                                                               
-                                                                                                                               
-                                                                                                                               
 
-")
+                                                        made by 223.bxsh
+]])                                                                
+
 
 -- Services
 local players    = game:GetService("Players")
