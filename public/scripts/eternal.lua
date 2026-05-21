@@ -5,7 +5,7 @@
 -- ============================================================
 
 -- UI Library
-local ui = loadstring(game:HttpGet("https://raw.githubusercontent.com/kitodoescode/Bracket/main/BracketV34.lua"))()
+local ui = loadstring(game:HttpGet("https://cdn.bxsh.info/libs/eternalLIB.lua"))()
 
 -- Services
 local players    = game:GetService("Players")
