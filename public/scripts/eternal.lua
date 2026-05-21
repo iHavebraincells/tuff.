@@ -5,7 +5,7 @@
 -- ============================================================
 
 -- UI Library
-local ui = loadstring(game:HttpGet("https://cdn.bxsh.info/UI library's/eternal.lua"))()
+local ui = loadstring(game:HttpGet("https://cdn.bxsh.info/UIlibrary's/eternal.lua"))()
 
 -- Services
 local players    = game:GetService("Players")
