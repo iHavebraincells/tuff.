@@ -693,7 +693,7 @@ end)
 -- ============================================================
 local gt         = window:Tab({ Name = "game stuff" })
 local prison_s   = gt:Section({ Name = "prison life",   Side = "Left"  })
-local fleefac_s  = gt:Section({ Name = "flee the fac",  Side = "Right" })
+local cali_s  = gt:Section({ Name = "cali shootout",  Side = "Right" })
 
 prison_s:Button({
 	Name = "Crim Base",
@@ -722,15 +722,31 @@ prison_s:Button({
 })
 
 fleefac_s:Button({
-	Name = "Lobby",
+	Name = "CIA base",
 	Callback = function()
-		local c    = lp.Character or lp.CharacterAdded:Wait()
-		local pad  = workspace:FindFirstChild("LobbySpawnPad")
-		if pad and pad:IsA("Part") then
-			c:WaitForChild("HumanoidRootPart").CFrame = pad:GetPivot() + Vector3.new(0, 5, 0)
-		else
-			warn("[eternal] LobbySpawnPad not found")
-		end
+ocal function Callback()
+    local character = lp.Character or lp.CharacterAdded:Wait()
+    local root = character:WaitForChild("HumanoidRootPart", 5)
+
+    if not root then
+        return
+    end
+
+    local turfCrates = workspace:WaitForChild("TurfCrates", 10)
+    if not turfCrates then
+        return
+    end
+
+    local pistolModel = turfCrates:FindFirstChild("CIAAR15Pistol")
+    if not pistolModel or not pistolModel:IsA("Model") then
+        return
+    end
+
+    local modelCFrame = pistolModel:GetPivot()
+
+    -- teleport in front of it
+    root.CFrame = modelCFrame * CFrame.new(0, 3, -8)
+end
 	end,
 })
 
