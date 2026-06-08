@@ -598,7 +598,7 @@ aim_s:Slider({
 --   WEAPON MODS TAB
 -- ============================================================
 local wt      = window:Tab({ Name = "weapon mods" })
-local gun_s   = wt:Section({ Name = "gun mods | MAY NOT WORK DEPENDING ON GAME", Side = "Left" })
+local gun_s   = wt:Section({ Name = "gun mods | MAY NOT WORK", Side = "Left" })
 
 local rainbow_conn   = nil
 local rainbow_hue    = 0
@@ -693,7 +693,6 @@ end)
 -- ============================================================
 local gt       = window:Tab({ Name = "game stuff" })
 local prison_s = gt:Section({ Name = "prison life",   Side = "Left" })
-local cali_s   = gt:Section({ Name = "cali shootout", Side = "Right" })
 
 prison_s:Button({
 	Name = "Crim Base",
@@ -722,24 +721,6 @@ prison_s:Button({
 		else
 			warn("[eternal] Prison_Cellblock not found")
 		end
-	end,
-})
-
-cali_s:Button({
-	Name = "CIA base",
-	Callback = function()
-		local character = lp.Character or lp.CharacterAdded:Wait()
-		local root = character:WaitForChild("HumanoidRootPart", 5)
-
-		if not root then return end
-
-		local turfCrates = workspace:WaitForChild("TurfCrates", 10)
-		if not turfCrates then return end
-
-		local pistolModel = turfCrates:FindFirstChild("CIAAR15Pistol")
-		if not pistolModel or not pistolModel:IsA("Model") then return end
-
-		root.CFrame = pistolModel:GetPivot() * CFrame.new(0, 3, -8)
 	end,
 })
 
