@@ -1,220 +1,154 @@
-<html lang="en"><head><meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Amethyst V4 | by bash</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&amp;display=swap" rel="stylesheet">
-<style>
-input:-webkit-autofill,
-input:-webkit-autofill:hover,
-input:-webkit-autofill:focus,
-input:-webkit-autofill:active {
--webkit-box-shadow: 0 0 0 30px #121018 inset !important;
--webkit-text-fill-color: #e5e5e5 !important;
-transition: background-color 5000s ease-in-out 0s;
-}
-</style><!-- aura-ga4-start -->
-<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-2M6V79H761"></script>
-<script>
-window.dataLayer = window.dataLayer || [];
-function gtag(){dataLayer.push(arguments);}
-gtag('js', new Date());
-gtag('config', 'G-2M6V79H761');
-</script>
-<!-- aura-ga4-end -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kalix</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:           #0d0d0d;
+      --surface:      #1e1e1e;
+      --surface-btn:  #2d2d2d;
+      --border:       #333;
+      --border-btn:   #444;
+      --text-primary: #e0e0e0;
+      --text-muted:   #aaaaaa;
+      --text-hint:    #555555;
+      --font:         system-ui, -apple-system, sans-serif;
+      --radius-pill:  40px;
+    }
+
+    body {
+      background: var(--bg);
+      font-family: var(--font);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .hero {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+    }
+
+    /* ─── Wordmark ───────────────────────────────────────── */
+    .wordmark {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: 52px;
+      color: #ffffff;
+      letter-spacing: -1px;
+      line-height: 1;
+    }
+
+    /* ─── Button bar ─────────────────────────────────────── */
+    .bar {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--surface);
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius-pill);
+      padding: 6px 10px;
+    }
+
+    .btn-download {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--surface-btn);
+      color: var(--text-primary);
+      border: 0.5px solid var(--border-btn);
+      border-radius: var(--radius-pill);
+      padding: 6px 14px;
+      font-size: 13px;
+      font-weight: 500;
+      font-family: var(--font);
+      cursor: pointer;
+      text-decoration: none;
+    }
+
+    .btn-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      background: transparent;
+      color: var(--text-muted);
+      border: 0.5px solid var(--border-btn);
+      border-radius: 50%;
+      cursor: pointer;
+      text-decoration: none;
+    }
+
+    /* ─── Divider between download buttons ──────────────── */
+    .bar-divider {
+      width: 0.5px;
+      height: 20px;
+      background: var(--border-btn);
+      flex-shrink: 0;
+    }
+
+    .btn-download:hover { background: #383838; }
+    .btn-icon:hover     { background: #2a2a2a; color: var(--text-primary); }
+
+    /* ─── Tagline ─────────────────────────────────────────── */
+    .tagline {
+      color: var(--text-hint);
+      font-size: 12px;
+    }
+  </style>
 </head>
+<body>
 
-<body class="text-neutral-200 overflow-hidden w-screen h-screen relative antialiased selection:bg-[#b57aff]/30 bg-[#0b0b0f]" style="font-family: 'Inter', sans-serif;">
+  <div class="hero">
 
-    <canvas id="particles" class="fixed top-0 left-0 w-full h-full z-0 pointer-events-none"></canvas>
+    <!-- Wordmark — edit font/size in .wordmark above -->
+    <span class="wordmark">Kalix</span>
 
-    <button id="backBtn" onclick="goBack()" class="hidden absolute top-6 left-6 z-50 flex items-center gap-1.5 bg-[#121018]/60 backdrop-blur-md border border-white/5 text-neutral-400 hover:text-[#b57aff] hover:border-[#b57aff]/40 px-3 py-1.5 rounded-lg text-xs font-normal transition-all duration-300">
-        <iconify-icon icon="solar:arrow-left-linear" class="text-sm" style="stroke-width: 1.5;"></iconify-icon>
-        Back
-    </button>
+    <!-- Button bar -->
+    <div class="bar">
 
-    <div id="loginContainer" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10 w-[90%] max-w-[340px] bg-[#121018]/70 backdrop-blur-xl px-8 pt-10 pb-8 rounded-2xl border border-white/5 shadow-2xl" style="transition: opacity 0.5s ease, transform 0.5s ease, filter 0.5s ease;">
-        
-        <div class="flex flex-col items-center mb-8">
-            <div class="flex items-center gap-2">
-                <h1 class="text-2xl font-normal tracking-tight text-white uppercase">Amethyst</h1>
-                <span class="text-xs text-[#b57aff] border border-[#b57aff]/20 bg-[#b57aff]/10 px-1.5 py-0.5 rounded font-normal tracking-wide">V4</span>
-            </div>
-        </div>
+      <!-- Download button 1 — change href to your Windows/Mac/Linux release URL -->
+      <a href="https://discord.com/oauth2/authorize?client_id=1514327948117672016" class="btn-download">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M12 5v14M5 12l7 7 7-7"/><path d="M3 20h18"/>
+        </svg>
+        Raid
+      </a>
 
-        <div class="space-y-3">
-            <div class="relative">
-                <iconify-icon icon="solar:user-linear" class="absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-500 text-base" style="stroke-width: 1.5;"></iconify-icon>
-                <input id="username" type="text" placeholder="Enter Username" autocomplete="off" class="w-full bg-white/5 border border-white/5 text-sm rounded-xl pl-10 pr-4 py-3 outline-none focus:border-[#b57aff]/40 focus:ring-1 focus:ring-[#b57aff]/20 transition-all placeholder:text-neutral-600 font-light">
-            </div>
-            
-            <div class="relative">
-                <iconify-icon icon="solar:lock-password-linear" class="absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-500 text-base" style="stroke-width: 1.5;"></iconify-icon>
-                <input id="password" type="password" placeholder="Enter Password" class="w-full bg-white/5 border border-white/5 text-sm rounded-xl pl-10 pr-4 py-3 outline-none focus:border-[#b57aff]/40 focus:ring-1 focus:ring-[#b57aff]/20 transition-all placeholder:text-neutral-600 font-light">
-            </div>
-        </div>
+      <!-- Thin divider between the two download buttons -->
+      <div class="bar-divider" aria-hidden="true"></div>
 
-        <button onclick="login()" class="w-full mt-6 bg-transparent border border-[#b57aff]/30 text-[#b57aff] hover:bg-[#b57aff] hover:text-[#0b0b0f] hover:border-[#b57aff] hover:shadow-[0_0_15px_rgba(181,122,255,0.25),0_0_30px_rgba(181,122,255,0.15)] text-sm font-medium tracking-tight py-3 rounded-xl transition-all duration-300 flex items-center justify-center gap-2">
-            Enter
-            <iconify-icon icon="solar:arrow-right-linear" class="text-base" style="stroke-width: 1.5;"></iconify-icon>
-        </button>
+      <!-- Download button 2 — change href to your second release URL (e.g. alternate platform) -->
+      <a href="https://discord.com/oauth2/authorize?client_id=1506781654281359420&permissions=8&integration_type=0&scope=bot" class="btn-download">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M12 5v14M5 12l7 7 7-7"/><path d="M3 20h18"/>
+        </svg>
+        Nuke
+      </a>
 
-        <div id="status" class="mt-4 text-xs font-normal text-center h-4 text-transparent transition-colors duration-300"></div>
+      <!-- Discord invite -->
+      <a href="https://discord.gg/RZbA7cEXYs" class="btn-icon" aria-label="Join Discord" target="_blank" rel="noopener">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z"/>
+        </svg>
+      </a>
 
-        <p class="absolute bottom-3 right-4 text-xs text-neutral-600 tracking-tight font-normal">made by bash</p>
     </div>
 
-    <div id="app" class="absolute inset-0 w-full h-full z-40 hidden" style="opacity: 0; transition: opacity 0.6s ease;">
-        <iframe id="frame" class="w-full h-full border-none"></iframe>
-    </div>
+    <!-- Tagline — edit text here -->
+    <p class="tagline">Kalix is completely free and trusted.</p>
 
-    <script>
-        const users = {
-            bash: "326950",
-            callender: "329062",
-        };
+  </div>
 
-        const usernameInput = document.getElementById("username");
-        const passwordInput = document.getElementById("password");
-        const statusElement = document.getElementById("status");
-        const loginBox = document.getElementById("loginContainer");
-        const app = document.getElementById("app");
-        const frame = document.getElementById("frame");
-        const backBtn = document.getElementById("backBtn");
-
-        function login() {
-            const u = usernameInput.value;
-            const p = passwordInput.value;
-
-            if (users[u] === p) {
-                statusElement.textContent = "Injecting...";
-                statusElement.className = "mt-4 text-xs font-normal text-center h-4 text-[#b57aff] transition-colors duration-300";
-
-                loginBox.style.opacity = '0';
-                loginBox.style.filter = 'blur(10px)';
-                loginBox.style.transform = 'translate(-50%, -50%) scale(0.95)';
-                loginBox.style.pointerEvents = 'none';
-
-                setTimeout(() => {
-                    loginBox.style.display = "none";
-                    
-                    app.style.display = "block";
-                    backBtn.style.display = "flex";
-
-                    frame.src = "https://pevcnupdate.update.curtellsoggydih.152-53-38-9.nip.io/";
-
-                    setTimeout(() => {
-                        app.style.opacity = '1';
-                    }, 50);
-
-                }, 500);
-
-            } else {
-                statusElement.textContent = "Invalid login";
-                statusElement.className = "mt-4 text-xs font-normal text-center h-4 text-red-400 transition-colors duration-300";
-                usernameInput.value = "";
-                passwordInput.value = "";
-            }
-        }
-
-        function goBack() {
-            app.style.opacity = '0';
-
-            setTimeout(() => {
-                app.style.display = "none";
-                frame.src = "";
-
-                loginBox.style.display = "block";
-
-                setTimeout(() => {
-                    loginBox.style.opacity = '1';
-                    loginBox.style.filter = 'none';
-                    loginBox.style.transform = 'translate(-50%, -50%) scale(1)';
-                    loginBox.style.pointerEvents = 'auto';
-                }, 50);
-
-                backBtn.style.display = "none";
-                
-                statusElement.textContent = "";
-                statusElement.className = "mt-4 text-xs font-normal text-center h-4 text-transparent transition-colors duration-300";
-                usernameInput.value = "";
-                passwordInput.value = "";
-            }, 400);
-        }
-
-        document.addEventListener("keydown", e => {
-            if (e.key === "Enter" && loginBox.style.display !== "none") login();
-        });
-
-        const canvas = document.getElementById("particles");
-        const ctx = canvas.getContext("2d");
-
-        let particles = [];
-        let mouse = { x: 0, y: 0 };
-
-        function resize() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-        }
-        resize();
-        window.addEventListener("resize", resize);
-
-        window.addEventListener("mousemove", e => {
-            mouse.x = e.clientX;
-            mouse.y = e.clientY;
-        });
-
-        function createParticles() {
-            for (let i = 0; i < 100; i++) {
-                particles.push({
-                    x: Math.random() * canvas.width,
-                    y: Math.random() * canvas.height,
-                    r: Math.random() * 2.5 + 0.5,
-                    speedY: Math.random() * 0.8 + 0.2,
-                    drift: (Math.random() - 0.5) * 0.3,
-                    alpha: Math.random() * 0.5 + 0.1
-                });
-            }
-        }
-
-        function draw() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-            particles.forEach(p => {
-                let dx = p.x - mouse.x;
-                let dy = p.y - mouse.y;
-                let dist = Math.sqrt(dx * dx + dy * dy);
-
-                if (dist < 120) {
-                    let force = (120 - dist) / 120;
-                    p.x += (dx / dist) * force * 1.5;
-                    p.y += (dy / dist) * force * 1.5;
-                }
-
-                p.y += p.speedY;
-                p.x += p.drift;
-
-                if (p.y > canvas.height) {
-                    p.y = -5;
-                    p.x = Math.random() * canvas.width;
-                }
-
-                if (p.x < 0) p.x = canvas.width;
-                if (p.x > canvas.width) p.x = 0;
-
-                ctx.beginPath();
-                ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-                ctx.fillStyle = `rgba(181, 122, 255, ${p.alpha})`;
-                ctx.shadowColor = "rgba(181, 122, 255, 0.4)";
-                ctx.shadowBlur = 10;
-                ctx.fill();
-            });
-
-            requestAnimationFrame(draw);
-        }
-
-        createParticles();
-        draw();
-    </script>
-
-</body></html>
+</body>
+</html>
