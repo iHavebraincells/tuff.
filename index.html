@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kalix — Home</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:           #0d0d0d;
+      --surface:      #1a1a1a;
+      --surface-btn:  #2d2d2d;
+      --surface-card: #141414;
+      --border:       #2a2a2a;
+      --border-btn:   #3a3a3a;
+      --text-primary: #e8e8e8;
+      --text-muted:   #888;
+      --text-hint:    #444;
+      --accent:       #ffffff;
+      --font:         'Inter', system-ui, -apple-system, sans-serif;
+      --font-display: 'Syne', sans-serif;
+      --radius-pill:  40px;
+      --radius-card:  14px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      font-family: var(--font);
+      color: var(--text-primary);
+      min-height: 100vh;
+    }
+
+    /* ─── Navbar ─────────────────────────────────────────── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 32px;
+      height: 56px;
+      background: rgba(13,13,13,0.85);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 0.5px solid var(--border);
+    }
+
+    .nav-logo {
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-size: 20px;
+      color: #fff;
+      text-decoration: none;
+      letter-spacing: -0.5px;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 28px;
+      list-style: none;
+    }
+
+    .nav-links a {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 500;
+      transition: color 0.15s;
+    }
+
+    .nav-links a:hover { color: var(--text-primary); }
+
+    .nav-cta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .nav-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--surface-btn);
+      color: var(--text-primary);
+      border: 0.5px solid var(--border-btn);
+      border-radius: var(--radius-pill);
+      padding: 6px 14px;
+      font-size: 12px;
+      font-weight: 500;
+      font-family: var(--font);
+      cursor: pointer;
+      text-decoration: none;
+      transition: background 0.15s;
+    }
+    .nav-btn:hover { background: #383838; }
+
+    .nav-discord {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 30px;
+      height: 30px;
+      background: transparent;
+      color: var(--text-muted);
+      border: 0.5px solid var(--border-btn);
+      border-radius: 50%;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background 0.15s, color 0.15s;
+    }
+    .nav-discord:hover { background: #2a2a2a; color: var(--text-primary); }
+
+    /* ─── Hero ───────────────────────────────────────────── */
+    .hero {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 80px 24px 60px;
+      text-align: center;
+      gap: 20px;
+      position: relative;
+    }
+
+    /* subtle radial glow behind hero */
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -58%);
+      width: 600px;
+      height: 400px;
+      background: radial-gradient(ellipse at center, rgba(255,255,255,0.03) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .hero-eyebrow {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      background: var(--surface);
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius-pill);
+      padding: 5px 12px;
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text-muted);
+      letter-spacing: 0.03em;
+    }
+
+    .hero-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: #4ade80;
+      flex-shrink: 0;
+      box-shadow: 0 0 6px #4ade80aa;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    .wordmark {
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-size: clamp(56px, 10vw, 96px);
+      color: #ffffff;
+      letter-spacing: -3px;
+      line-height: 1;
+    }
+
+    .hero-subtitle {
+      color: var(--text-muted);
+      font-size: 15px;
+      max-width: 360px;
+      line-height: 1.6;
+    }
+
+    /* ─── Button bar ─────────────────────────────────────── */
+    .bar {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--surface);
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius-pill);
+      padding: 6px 10px;
+      margin-top: 4px;
+    }
+
+    .btn-download {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--surface-btn);
+      color: var(--text-primary);
+      border: 0.5px solid var(--border-btn);
+      border-radius: var(--radius-pill);
+      padding: 7px 16px;
+      font-size: 13px;
+      font-weight: 500;
+      font-family: var(--font);
+      cursor: pointer;
+      text-decoration: none;
+      transition: background 0.15s;
+    }
+
+    .btn-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 34px; height: 34px;
+      background: transparent;
+      color: var(--text-muted);
+      border: 0.5px solid var(--border-btn);
+      border-radius: 50%;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background 0.15s, color 0.15s;
+    }
+
+    .bar-divider {
+      width: 0.5px; height: 20px;
+      background: var(--border-btn);
+      flex-shrink: 0;
+    }
+
+    .btn-download:hover { background: #383838; }
+    .btn-icon:hover { background: #2a2a2a; color: var(--text-primary); }
+
+    .tagline {
+      color: var(--text-hint);
+      font-size: 11px;
+      letter-spacing: 0.04em;
+    }
+
+    /* ─── Stats strip ────────────────────────────────────── */
+    .stats {
+      display: flex;
+      justify-content: center;
+      gap: 0;
+      padding: 28px 24px;
+      border-top: 0.5px solid var(--border);
+      border-bottom: 0.5px solid var(--border);
+      background: var(--surface-card);
+    }
+
+    .stat {
+      flex: 1;
+      max-width: 180px;
+      text-align: center;
+      padding: 0 32px;
+      border-right: 0.5px solid var(--border);
+    }
+    .stat:last-child { border-right: none; }
+
+    .stat-value {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 28px;
+      color: #fff;
+      letter-spacing: -1px;
+    }
+
+    .stat-label {
+      font-size: 11px;
+      color: var(--text-hint);
+      margin-top: 3px;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    /* ─── Section ────────────────────────────────────────── */
+    section {
+      padding: 80px 24px;
+      max-width: 960px;
+      margin: 0 auto;
+    }
+
+    .section-label {
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text-hint);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+
+    .section-title {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: clamp(26px, 4vw, 36px);
+      color: #fff;
+      letter-spacing: -1px;
+      line-height: 1.15;
+      margin-bottom: 14px;
+    }
+
+    .section-sub {
+      font-size: 14px;
+      color: var(--text-muted);
+      max-width: 420px;
+      line-height: 1.7;
+    }
+
+    /* ─── Feature cards ──────────────────────────────────── */
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1px;
+      background: var(--border);
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius-card);
+      overflow: hidden;
+      margin-top: 40px;
+    }
+
+    .card {
+      background: var(--surface-card);
+      padding: 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      transition: background 0.15s;
+    }
+    .card:hover { background: #171717; }
+
+    .card-icon {
+      width: 36px; height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 0.5px solid var(--border-btn);
+      border-radius: 10px;
+      color: var(--text-muted);
+      background: var(--surface-btn);
+      flex-shrink: 0;
+    }
+
+    .card-title {
+      font-weight: 600;
+      font-size: 14px;
+      color: #fff;
+    }
+
+    .card-desc {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    /* ─── Bots section ───────────────────────────────────── */
+    .bots-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 12px;
+      margin-top: 40px;
+    }
+
+    .bot-card {
+      background: var(--surface-card);
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius-card);
+      padding: 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      transition: border-color 0.15s;
+    }
+    .bot-card:hover { border-color: #444; }
+
+    .bot-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .bot-avatar {
+      width: 44px; height: 44px;
+      border-radius: 12px;
+      background: var(--surface-btn);
+      border: 0.5px solid var(--border-btn);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-size: 16px;
+      color: #fff;
+      flex-shrink: 0;
+    }
+
+    .bot-name {
+      font-weight: 600;
+      font-size: 15px;
+      color: #fff;
+    }
+
+    .bot-tag {
+      font-size: 11px;
+      color: var(--text-hint);
+      margin-top: 1px;
+    }
+
+    .bot-desc {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    .bot-features {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text-muted);
+      background: var(--surface-btn);
+      border: 0.5px solid var(--border-btn);
+      border-radius: 6px;
+      padding: 3px 8px;
+    }
+
+    .bot-add {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      align-self: flex-start;
+      background: var(--surface-btn);
+      color: var(--text-primary);
+      border: 0.5px solid var(--border-btn);
+      border-radius: var(--radius-pill);
+      padding: 7px 16px;
+      font-size: 12px;
+      font-weight: 500;
+      font-family: var(--font);
+      cursor: pointer;
+      text-decoration: none;
+      transition: background 0.15s;
+      margin-top: 4px;
+    }
+    .bot-add:hover { background: #383838; }
+
+    /* ─── Footer ─────────────────────────────────────────── */
+    footer {
+      border-top: 0.5px solid var(--border);
+      padding: 32px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      max-width: 960px;
+      margin: 0 auto;
+    }
+
+    .footer-logo {
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-size: 16px;
+      color: var(--text-hint);
+      letter-spacing: -0.5px;
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 20px;
+      list-style: none;
+    }
+
+    .footer-links a {
+      font-size: 12px;
+      color: var(--text-hint);
+      text-decoration: none;
+      transition: color 0.15s;
+    }
+    .footer-links a:hover { color: var(--text-muted); }
+
+    /* ─── Responsive ─────────────────────────────────────── */
+    @media (max-width: 600px) {
+      nav { padding: 0 16px; }
+      .nav-links { display: none; }
+      .stats { flex-wrap: wrap; }
+      .stat { min-width: 50%; border-right: none; border-bottom: 0.5px solid var(--border); padding: 16px; }
+      .stat:last-child { border-bottom: none; }
+      footer { flex-direction: column; gap: 16px; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ─── Navbar ──────────────────────────────────────────── -->
+  <nav>
+    <a href="#" class="nav-logo">Kalix</a>
+
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="faq.html">FAQ</a></li>
+    </ul>
+
+  </nav>
+
+  <!-- ─── Hero ─────────────────────────────────────────────── -->
+  <div class="hero">
+    <div class="hero-eyebrow">
+      <span class="hero-dot"></span>
+      Free &amp; trusted Discord tools
+    </div>
+
+    <span class="wordmark">Kalix</span>
+
+    <p class="hero-subtitle">
+      Powerful Discord bots built for servers that mean business. Add Raid or Nuke in seconds — no subscriptions, no catches.
+    </p>
+
+    <div class="bar">
+      <a href="https://discord.com/oauth2/authorize?client_id=1514327948117672016" class="btn-download" target="_blank" rel="noopener">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M12 5v14M5 12l7 7 7-7"/><path d="M3 20h18"/>
+        </svg>
+        Add Raid
+      </a>
+      <div class="bar-divider" aria-hidden="true"></div>
+      <a href="https://discord.com/oauth2/authorize?client_id=1506781654281359420&permissions=8&integration_type=0&scope=bot" class="btn-download" target="_blank" rel="noopener">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M12 5v14M5 12l7 7 7-7"/><path d="M3 20h18"/>
+        </svg>
+        Add Nuke
+      </a>
+      <a href="https://discord.gg/RZbA7cEXYs" class="btn-icon" aria-label="Join Discord" target="_blank" rel="noopener">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z"/>
+        </svg>
+      </a>
+    </div>
+
+    <p class="tagline">Kalix is completely free and trusted.</p>
+  </div>
+
+  <!-- ─── Stats ─────────────────────────────────────────────── -->
+  <div class="stats">
+    <div class="stat">
+      <div class="stat-value">2</div>
+      <div class="stat-label">Bots</div>
+    </div>
+    <div class="stat">
+      <div class="stat-value">Free</div>
+      <div class="stat-label">Always</div>
+    </div>
+    <div class="stat">
+      <div class="stat-value">24/7</div>
+      <div class="stat-label">Uptime</div>
+    </div>
+    <div class="stat">
+      <div class="stat-value">0</div>
+      <div class="stat-label">Paywalls</div>
+    </div>
+  </div>
+
+  <!-- ─── Features ─────────────────────────────────────────── -->
+  <section id="features">
+    <div class="section-label">Why Kalix</div>
+    <h2 class="section-title">Built to actually work.</h2>
+    <p class="section-sub">No bloat, no premium tiers. Kalix bots are focused tools that do what they say and stay online.</p>
+
+    <div class="cards">
+      <div class="card">
+        <div class="card-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+          </svg>
+        </div>
+        <div class="card-title">Fast Setup</div>
+        <div class="card-desc">Authorize once and your bot is live in your server immediately. No config files, no waiting.</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+          </svg>
+        </div>
+        <div class="card-title">Trusted &amp; Safe</div>
+        <div class="card-desc">Used across hundreds of servers. We don't log your messages or sell your data. Ever.</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>
+          </svg>
+        </div>
+        <div class="card-title">Always Online</div>
+        <div class="card-desc">Kalix bots run on reliable infrastructure. When you need them, they're there.</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          </svg>
+        </div>
+        <div class="card-title">Free Forever</div>
+        <div class="card-desc">No subscription, no premium tier, no donation wall. All features, no cost.</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
+          </svg>
+        </div>
+        <div class="card-title">Community Backed</div>
+        <div class="card-desc">Join our Discord to report bugs, suggest features, and talk directly to the developers.</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+          </svg>
+        </div>
+        <div class="card-title">Actively Updated</div>
+        <div class="card-desc">New commands and improvements ship regularly. The bots get better the more you use them.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── Bots ──────────────────────────────────────────────── -->
+  <section id="bots">
+    <div class="section-label">Our Bots</div>
+    <h2 class="section-title">Two bots. One mission.</h2>
+    <p class="section-sub">Each bot is purpose-built. Pick the one you need, or add both.</p>
+
+    <div class="bots-grid">
+      <!-- Raid Bot -->
+      <div class="bot-card">
+        <div class="bot-header">
+          <div class="bot-avatar">R</div>
+          <div>
+            <div class="bot-name">Kalix Raid</div>
+            <div class="bot-tag">Server Management</div>
+          </div>
+        </div>
+        <p class="bot-desc">
+          Kalix Raid gives your server powerful management utilities. Keep your community organized and your moderators equipped.
+        </p>
+        <div class="bot-features">
+          <span class="tag">Moderation</span>
+          <span class="tag">Utilities</span>
+          <span class="tag">Server Tools</span>
+        </div>
+        <a href="https://discord.com/oauth2/authorize?client_id=1514327948117672016" class="bot-add" target="_blank" rel="noopener">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+          Add to Server
+        </a>
+      </div>
+
+      <!-- Nuke Bot -->
+      <div class="bot-card">
+        <div class="bot-header">
+          <div class="bot-avatar">N</div>
+          <div>
+            <div class="bot-name">Kalix Nuke</div>
+            <div class="bot-tag">Advanced Actions</div>
+          </div>
+        </div>
+        <p class="bot-desc">
+          Kalix Nuke provides advanced, high-permission actions for server owners who need more control. Use responsibly.
+        </p>
+        <div class="bot-features">
+          <span class="tag">Admin Tools</span>
+          <span class="tag">Bulk Actions</span>
+          <span class="tag">Power User</span>
+        </div>
+        <a href="https://discord.com/oauth2/authorize?client_id=1506781654281359420&permissions=8&integration_type=0&scope=bot" class="bot-add" target="_blank" rel="noopener">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+          Add to Server
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── Footer ───────────────────────────────────────────── -->
+  <footer>
+    <span class="footer-logo">Kalix</span>
+    <ul class="footer-links">
+      <li><a href="#features">Features</a></li>
+      <li><a href="#bots">Bots</a></li>
+      <li><a href="faq.html">FAQ</a></li>
+      <li><a href="https://discord.gg/RZbA7cEXYs" target="_blank" rel="noopener">Discord</a></li>
+    </ul>
+  </footer>
+
+</body>
+</html>
