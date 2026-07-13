@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>court.larp - Authentication</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #0f0f0f;
+            color: #fff;
+            text-align: center;
+            padding: 60px 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: #1f1f1f;
+            padding: 50px;
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(138, 43, 226, 0.3);
+        }
+        h1 { color: #8a2be2; margin-bottom: 10px; }
+        p { font-size: 18px; }
+        button {
+            background: #8a2be2;
+            color: white;
+            border: none;
+            padding: 18px 40px;
+            font-size: 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            margin: 30px 0;
+        }
+        button:hover { background: #a14eff; }
+        .success { color: lime; font-size: 22px; display: none; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>court.larp Authentication</h1>
+        <p id="status">Click the button below to verify your Discord account.</p>
+        
+        <button onclick="completeAuth()">✅ VERIFY & GET KEY</button>
+        
+        <p class="success" id="successMsg">
+            ✅ Authentication Completed!<br><br>
+            Return to Discord and type:<br>
+            <strong>,step1 YOURCODE</strong>
+        </p>
+    </div>
+
+    <script>
+        const pathParts = window.location.pathname.split('/start/');
+        const authCode = pathParts[1];
+
+        if (!authCode) {
+            document.getElementById('status').innerHTML = '❌ Invalid authentication link.';
+        }
+
+        async function completeAuth() {
+            if (!authCode) return;
+
+            const btn = document.querySelector('button');
+            btn.disabled = true;
+            btn.textContent = 'Verifying...';
+
+            try {
+                // ← CHANGE THIS TO YOUR PC'S LOCAL IP
+                const response = await fetch(`http://192.168.40.201:5000/complete/${authCode}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+
+                if (response.ok) {
+                    document.getElementById('successMsg').style.display = 'block';
+                    document.getElementById('status').style.display = 'none';
+                } else {
+                    alert('Failed to verify. Make sure the bot is running.');
+                }
+            } catch (err) {
+                alert('Cannot connect to bot.\n\n1. Make sure bot is running\n2. Use your correct local IP');
+                console.error(err);
+            }
+        }
+    </script>
+</body>
+</html>
