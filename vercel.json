@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/start/:code",
+      "destination": "/start?code=:code"
+    }
+  ]
+}
