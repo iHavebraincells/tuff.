@@ -51,38 +51,63 @@
     </div>
 
     <script>
-        const pathParts = window.location.pathname.split('/start/');
-        const authCode = pathParts[1];
+    // Try to get the code from the URL path first (/start/ABC123)
+    let authCode = "";
 
-        if (!authCode) {
-            document.getElementById('status').innerHTML = '❌ Invalid authentication link.';
-        }
+    const path = window.location.pathname;
+    const startIndex = path.indexOf("/start/");
 
-        async function completeAuth() {
-            if (!authCode) return;
+    if (startIndex !== -1) {
+        authCode = path.substring(startIndex + "/start/".length);
+    }
 
-            const btn = document.querySelector('button');
-            btn.disabled = true;
-            btn.textContent = 'Verifying...';
+    // If no code in the path, fall back to ?code=ABC123
+    if (!authCode) {
+        const params = new URLSearchParams(window.location.search);
+        authCode = params.get("code") || "";
+    }
 
-            try {
-                // ← CHANGE THIS TO YOUR PC'S LOCAL IP
-                const response = await fetch(`http://192.168.40.201:5000/complete/${authCode}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' }
-                });
+    if (!authCode) {
+        document.getElementById("status").innerHTML =
+            "❌ Invalid authentication link.";
+        document.querySelector("button").disabled = true;
+    }
 
-                if (response.ok) {
-                    document.getElementById('successMsg').style.display = 'block';
-                    document.getElementById('status').style.display = 'none';
-                } else {
-                    alert('Failed to verify. Make sure the bot is running.');
+    async function completeAuth() {
+        if (!authCode) return;
+
+        const btn = document.querySelector("button");
+        btn.disabled = true;
+        btn.textContent = "Verifying...";
+
+        try {
+            // CHANGE THIS TO YOUR API URL
+            const response = await fetch(
+                `http://192.168.40.201:5000/complete/${encodeURIComponent(authCode)}`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    }
                 }
-            } catch (err) {
-                alert('Cannot connect to bot.\n\n1. Make sure bot is running\n2. Use your correct local IP');
-                console.error(err);
+            );
+
+            if (response.ok) {
+                document.getElementById("successMsg").style.display = "block";
+                btn.style.display = "none";
+                document.getElementById("status").style.display = "none";
+            } else {
+                alert("Failed to verify. Make sure the bot is running.");
+                btn.disabled = false;
+                btn.textContent = "✅ VERIFY & GET KEY";
             }
+        } catch (err) {
+            alert("Cannot connect to the authentication server.");
+            console.error(err);
+            btn.disabled = false;
+            btn.textContent = "✅ VERIFY & GET KEY";
         }
-    </script>
+    }
+</script>
 </body>
 </html>
