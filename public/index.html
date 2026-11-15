@@ -86,6 +86,56 @@ pre{margin:0;padding:14px 16px;overflow:auto;color:#d7d7dd;font:12px/1.75 ui-mon
  .kv{grid-template-columns:105px minmax(0,1fr)}
  .footer{gap:8px;flex-direction:column}
 }
+
+/* Mobile layout correction: the desktop sidebar offset must not reserve space
+   when the sidebar becomes an off-canvas drawer. */
+@media (max-width: 760px) {
+  html, body { width: 100%; max-width: 100%; overflow-x: hidden; }
+  .main-wrap {
+    margin-left: 0 !important;
+    width: 100%;
+    min-width: 0;
+  }
+  .layout {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    margin: 0;
+    padding: 30px 20px 64px;
+  }
+  article, #content {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+  }
+  .lead { max-width: 100%; }
+  h1, h2, h3, p { overflow-wrap: anywhere; }
+  .meta-row { gap: 7px; }
+  .pill { max-width: 100%; }
+  .api-block, .codebox, .api-card { max-width: 100%; min-width: 0; }
+  pre {
+    max-width: 100%;
+    white-space: pre;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    font-size: 11px;
+  }
+  .kv { grid-template-columns: minmax(86px, 30%) minmax(0, 1fr); }
+  .kv div { min-width: 0; overflow-wrap: anywhere; }
+  .footer { min-width: 0; }
+  .sidebar {
+    width: min(290px, 86vw);
+    max-width: 86vw;
+    padding-bottom: max(32px, env(safe-area-inset-bottom));
+  }
+  .topbar {
+    padding-left: max(12px, env(safe-area-inset-left));
+    padding-right: max(12px, env(safe-area-inset-right));
+  }
+}
+
 </style>
 </head>
 <body>
